@@ -3,9 +3,12 @@ from xtermcolor import colorize
 
 CHARS_LIGHT = [' ', ' ', '.', ':', '!', '+', '*', 'e', '$', '@', '8']
 CHARS_COLOR = ['.', '*', 'e', 's', '◍']
-CHARS_FILLED = ['░', '▒', '▓', '█']
+CHARS_FILLED = ['░', '▒', '▓', '█'] 
+CHARS_AKAI = [' ', ' ', ' ', ',', ':', ';', 'I', 'l', '!', 'i', '>', '<', '~', '+', '_', '-', '?', ']', '[', '1', ')', '(', r'\|', '/', 't', 'f', 'j', 'r', 'x', 'n', 'u', 'v', 'c', 'z', 'X', 'Y', 'U', 'J', 'C', 'L', 'Q', '0', 'O', 'Z', 'm', 'w', 'q', 'p', 'd', 'b', 'k', 'h', 'a', 'o', '*', '#', 'M', 'W', '&', '8', '%', 'B', '@', '$']
+DENSITY = [CHARS_LIGHT, CHARS_COLOR, CHARS_FILLED,CHARS_AKAI]
 
-DENSITY = [CHARS_LIGHT, CHARS_COLOR, CHARS_FILLED]
+
+
 
 def brightness_to_ascii(i, density=0):
     chars_collection = DENSITY[density]

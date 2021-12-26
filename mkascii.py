@@ -4,28 +4,8 @@ import PIL.Image
 import subprocess
 from os import get_terminal_size as _term_size
 
+
 def convert_frame_pixels_to_ascii(frame,dimensions, new_line_chars=True):
-    """
-    Replace all pixeles with colored chars and return the resulting string
-
-    This method iterates each pixel of one video frame
-    respecting the dimensions of the printing area
-    to truncate the width if necessary
-    and use the pixel_to_ascii method to convert one pixel
-    into a character with the appropriate color.
-    Finally joins the set of chars in a string ready to print.
-
-    Args:
-        frame: a single video frame
-        dimensions: an array with the printing area dimensions
-            in pixels [rows, cols]
-        new_line_chars: if should append a new line character
-            at end of each row
-
-    Returns:
-        str: The resulting set of colored chars as a unique string
-
-    """
     cols, _ = dimensions
     w, h = frame.size
 
@@ -37,7 +17,7 @@ def convert_frame_pixels_to_ascii(frame,dimensions, new_line_chars=True):
     for i in range(h-2):
         for j in range(printing_width-2):
             pixel = frame.getpixel((j,i))
-            msg += imp.pixel_to_ascii(pixel)
+            msg += imp.pixel_to_ascii(pixel,density=3)
         if new_line_chars:
             msg += "\n"
         else:
@@ -52,42 +32,56 @@ def resize(frame, dimensions):
     reduced_width = int(width * reduction_factor / 100)
     reduced_height = int(height * reduction_factor / 100)
     dimension = (reduced_width, reduced_height)
-    print(f'resizing {dimension}')
     return frame.resize(dimension)
 def show(name):
     try:
-        for i in range(1,1000):
+        files = os.listdir(f"{name}/")
+        for i in range(1,len(files)):
             resolution = _term_size()
-            fname = "data/images/{file}/output{f:0=6}.png".format(f = i,file=name)
+            fname = "{file}/output{f:0=6}.png".format(f = i,file=name)
             with PIL.Image.open(fname) as frame:
+                sys.stdout.write('\u001b[0;0H')
                 frame = resize(frame,resolution)
                 sys.stdout.write(convert_frame_pixels_to_ascii(frame,resolution))
     except KeyboardInterrupt:
         print('exiting')
 
+def frame(frame):
+    resolution = _term_size()
+    sys.stdout.write('\u001b[0;0H')
+    sys.stdout.write(str(resolution))
+    frame = resize(frame,resolution)
+    sys.stdout.write(convert_frame_pixels_to_ascii(frame,resolution))
 def gen(input):
     output = input.split('/')[-1].split('.')[0]
-    if not os.path.exists("data/images/" + output):
-        os.makedirs("data/images/" + output)
+    if not os.path.exists("./" + output):
+        os.makedirs("./" + output)
 
-    query = "ffmpeg -i " + input + " -vf fps=" + str(15) + " " + "data/images/" + output + "/output%06d.png"
-    response = subprocess.Popen(query, shell=True, stdout=subprocess.PIPE).stdout.read()
+    query = "ffmpeg -i " + input + " -vf fps=" + str(15) + " ." + "/" + output + "/output%06d.png"
+    os.system(query)
 
 def main():
     os.system("clear")
-    dd = "data/images/"
+    dd = "./"
     all = os.listdir(dd)
-    lst = {}
+    lstd = {}
+    lstv = {}
     for a in range(len(all)):
         if os.path.exists(f'{dd}{all[a]}/output000001.png'):
-            lst[str(a)] = all[a]
-    print(lst)
+            lstd[str(a)] = all[a]
+        elif all[a].endswith('.mp4'):
+            lstv[str(a)] = all[a]
+    
+    print(lstd)
     chose = input("chose number of video: ")
-    if chose in lst:
-        show(lst[chose])
+    if chose in lstd:
+        show(lstd[chose])
     elif chose == "":
+        print(lstv)
         path = input("Paste path to mp4 here: ")
-        if os.path.exists(path):
+        if path in lstv:
+            gen(lstv[path])
+        elif os.path.exists(path):
             gen(path)
         else:
             print("invalid path")
